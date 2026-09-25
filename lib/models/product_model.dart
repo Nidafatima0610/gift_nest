@@ -20,6 +20,13 @@ class ProductModel {
   final bool isPopular;
   final bool isStaffPick;
   final DateTime? createdAt;
+  final String? material;
+  final String? size;
+  final String? color;
+  final String? preparationTime;
+  final List<String> availableColors;
+  final List<String> availableSizes;
+  final double personalizationPrice;
 
   const ProductModel({
     required this.id,
@@ -42,6 +49,13 @@ class ProductModel {
     this.isPopular = false,
     this.isStaffPick = false,
     this.createdAt,
+    this.material,
+    this.size,
+    this.color,
+    this.preparationTime,
+    this.availableColors = const [],
+    this.availableSizes = const [],
+    this.personalizationPrice = 0.0,
   });
 
   ProductModel copyWith({
@@ -65,6 +79,13 @@ class ProductModel {
     bool? isPopular,
     bool? isStaffPick,
     DateTime? createdAt,
+    String? material,
+    String? size,
+    String? color,
+    String? preparationTime,
+    List<String>? availableColors,
+    List<String>? availableSizes,
+    double? personalizationPrice,
   }) {
     return ProductModel(
       id: id ?? this.id,
@@ -87,6 +108,13 @@ class ProductModel {
       isPopular: isPopular ?? this.isPopular,
       isStaffPick: isStaffPick ?? this.isStaffPick,
       createdAt: createdAt ?? this.createdAt,
+      material: material ?? this.material,
+      size: size ?? this.size,
+      color: color ?? this.color,
+      preparationTime: preparationTime ?? this.preparationTime,
+      availableColors: availableColors ?? this.availableColors,
+      availableSizes: availableSizes ?? this.availableSizes,
+      personalizationPrice: personalizationPrice ?? this.personalizationPrice,
     );
   }
 
@@ -112,6 +140,13 @@ class ProductModel {
       'isPopular': isPopular,
       'isStaffPick': isStaffPick,
       'createdAt': createdAt?.toIso8601String(),
+      'material': material,
+      'size': size,
+      'color': color,
+      'preparationTime': preparationTime,
+      'availableColors': availableColors,
+      'availableSizes': availableSizes,
+      'personalizationPrice': personalizationPrice,
     };
   }
 
@@ -139,6 +174,13 @@ class ProductModel {
       createdAt: map['createdAt'] != null
           ? DateTime.tryParse(map['createdAt'] as String)
           : null,
+      material: map['material'] as String?,
+      size: map['size'] as String?,
+      color: map['color'] as String?,
+      preparationTime: map['preparationTime'] as String?,
+      availableColors: List<String>.from(map['availableColors'] ?? const []),
+      availableSizes: List<String>.from(map['availableSizes'] ?? const []),
+      personalizationPrice: (map['personalizationPrice'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }

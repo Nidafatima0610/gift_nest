@@ -16,7 +16,14 @@ class CartItemModel {
     this.giftRecipientNote,
   });
 
-  double get totalPrice => product.price * quantity;
+  double get unitPrice {
+    final customFee = (personalizations != null && personalizations!.isNotEmpty)
+        ? product.personalizationPrice
+        : 0.0;
+    return product.price + customFee;
+  }
+
+  double get totalPrice => unitPrice * quantity;
 
   CartItemModel copyWith({
     String? id,
