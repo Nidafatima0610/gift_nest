@@ -14,6 +14,7 @@ class AppColors {
 
   // Typography Colors
   static const Color mainText = Color(0xFF272327);
+  static const Color text = mainText;
   static const Color secondaryText = Color(0xFF777177);
 
   // Functional & Border Colors

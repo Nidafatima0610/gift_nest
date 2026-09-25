@@ -10,4 +10,6 @@ class CurrencyFormatter {
     );
     return '$symbol$withCommas';
   }
+
+  static String formatPKR(double amount) => format(amount);
 }

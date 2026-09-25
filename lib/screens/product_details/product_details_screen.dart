@@ -6,12 +6,37 @@ import '../../core/routes/app_routes.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_card.dart';
 
-/// Placeholder screen for Product Details route (/product-details).
+import '../../core/utils/currency_formatter.dart';
+import '../../models/product_model.dart';
+
+import '../explore/data/explore_demo_data.dart';
+
+/// Screen for Product Details route (/product-details).
+/// Displays passed ProductModel if provided, or default placeholder.
 class ProductDetailsScreen extends StatelessWidget {
-  const ProductDetailsScreen({super.key});
+  final ProductModel? initialProduct;
+
+  const ProductDetailsScreen({
+    super.key,
+    this.initialProduct,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    ProductModel? routeProduct;
+    if (args is ProductModel) {
+      routeProduct = args;
+    } else if (args is String) {
+      for (final p in ExploreDemoData.catalogProducts) {
+        if (p.id == args) {
+          routeProduct = p;
+          break;
+        }
+      }
+    }
+    final product = initialProduct ?? routeProduct;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -41,7 +66,7 @@ class ProductDetailsScreen extends StatelessWidget {
                         color: AppColors.surfaceVariant,
                         borderRadius: AppDimensions.borderRadiusMd,
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.card_giftcard_rounded,
                           size: 48,
@@ -51,17 +76,41 @@ class ProductDetailsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppDimensions.md),
                     Text(
-                      'Boutique Artisan Gift',
+                      product?.title ?? 'Boutique Artisan Gift',
+                      textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: AppColors.darkPrimary,
                           ),
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Placeholder for product media, maker profile, customization options, and reviews.',
+                    if (product?.creatorName != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'by ${product!.creatorName}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                    if (product != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        CurrencyFormatter.formatPKR(product.price),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    Text(
+                      product?.description ??
+                          'Placeholder for product media, maker profile, customization options, and reviews.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 13, color: AppColors.secondaryText),
+                      style: const TextStyle(fontSize: 13, color: AppColors.secondaryText),
                     ),
                   ],
                 ),
