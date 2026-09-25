@@ -6,12 +6,16 @@ import '../models/cart_model.dart';
 import '../models/gift_box_model.dart';
 import '../models/product_model.dart';
 
-/// Manages shopping cart state, gifting customizations, and local persistence.
+/// Manages shopping cart state, gifting customizations, coupons, and local persistence.
 class CartProvider extends ChangeNotifier {
   static const String _storageKey = 'user_cart_data';
+  static const double defaultDeliveryFee = 200.0;
 
   CartModel _cart = const CartModel(id: 'active_cart');
   bool _isInitialized = false;
+
+  String? _appliedCoupon;
+  double _discount = 0.0;
 
   CartModel get cart => _cart;
   List<CartItemModel> get items => _cart.items;
@@ -19,7 +23,10 @@ class CartProvider extends ChangeNotifier {
       _cart.items.where((item) => item.giftBox != null).map((item) => item.giftBox!).toList();
   int get itemCount => _cart.totalItemCount;
   double get subtotal => _cart.subtotal;
-  double get total => _cart.total;
+  double get deliveryFee => _cart.items.isEmpty ? 0.0 : defaultDeliveryFee;
+  double get discount => _discount;
+  String? get appliedCoupon => _appliedCoupon;
+  double get total => (subtotal + deliveryFee - discount).clamp(0.0, double.infinity);
   bool get isEmpty => _cart.items.isEmpty;
   bool get isInitialized => _isInitialized;
 
@@ -51,6 +58,33 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
+  void _recalculateDiscount() {
+    if (_appliedCoupon == 'WELCOME10') {
+      _discount = subtotal * 0.10;
+    } else {
+      _discount = 0.0;
+    }
+  }
+
+  /// Applies demo coupon code. WELCOME10 gives 10% discount on subtotal.
+  bool applyCoupon(String code) {
+    final cleaned = code.trim().toUpperCase();
+    if (cleaned == 'WELCOME10') {
+      _appliedCoupon = 'WELCOME10';
+      _recalculateDiscount();
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  /// Removes currently applied coupon.
+  void removeCoupon() {
+    _appliedCoupon = null;
+    _discount = 0.0;
+    notifyListeners();
+  }
+
   /// Adds a product to the cart. If the product and personalizations match,
   /// increments quantity; otherwise creates a new line item.
   void addItem({
@@ -61,6 +95,7 @@ class CartProvider extends ChangeNotifier {
   }) {
     final existingIndex = _cart.items.indexWhere(
       (item) =>
+          !item.isGiftBox &&
           item.product.id == product.id &&
           mapEquals(item.personalizations, personalizations),
     );
@@ -69,9 +104,9 @@ class CartProvider extends ChangeNotifier {
 
     if (existingIndex >= 0) {
       final existingItem = updatedItems[existingIndex];
-      updatedItems[existingIndex] = existingItem.copyWith(
-        quantity: existingItem.quantity + quantity,
-      );
+      final maxStock = product.inStock ? 10 : 1;
+      final newQty = (existingItem.quantity + quantity).clamp(1, maxStock);
+      updatedItems[existingIndex] = existingItem.copyWith(quantity: newQty);
     } else {
       updatedItems.add(
         CartItemModel(
@@ -87,6 +122,7 @@ class CartProvider extends ChangeNotifier {
     }
 
     _cart = _cart.copyWith(items: updatedItems);
+    _recalculateDiscount();
     _persist();
     notifyListeners();
   }
@@ -120,6 +156,7 @@ class CartProvider extends ChangeNotifier {
 
     final updatedItems = List<CartItemModel>.from(_cart.items)..add(cartItem);
     _cart = _cart.copyWith(items: updatedItems);
+    _recalculateDiscount();
     _persist();
     notifyListeners();
   }
@@ -127,24 +164,28 @@ class CartProvider extends ChangeNotifier {
   void removeItem(String itemId) {
     final updatedItems = _cart.items.where((item) => item.id != itemId).toList();
     _cart = _cart.copyWith(items: updatedItems);
+    _recalculateDiscount();
     _persist();
     notifyListeners();
   }
 
   void updateQuantity(String itemId, int newQuantity) {
-    if (newQuantity <= 0) {
-      removeItem(itemId);
-      return;
-    }
+    if (newQuantity < 1) return;
 
     final updatedItems = _cart.items.map((item) {
       if (item.id == itemId) {
-        return item.copyWith(quantity: newQuantity);
+        if (item.isGiftBox) {
+          return item; // Custom gift box is treated as a single complete unit
+        }
+        final maxStock = item.product.inStock ? 10 : 1;
+        final clamped = newQuantity.clamp(1, maxStock);
+        return item.copyWith(quantity: clamped);
       }
       return item;
     }).toList();
 
     _cart = _cart.copyWith(items: updatedItems);
+    _recalculateDiscount();
     _persist();
     notifyListeners();
   }
@@ -163,6 +204,8 @@ class CartProvider extends ChangeNotifier {
 
   void clearCart() {
     _cart = const CartModel(id: 'active_cart');
+    _appliedCoupon = null;
+    _discount = 0.0;
     _persist();
     notifyListeners();
   }

@@ -37,7 +37,7 @@ class GiftNestApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()..init()),
-        ChangeNotifierProvider(create: (_) => OrderProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()..init()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()..init()),
         ChangeNotifierProvider(create: (_) => BuildGiftProvider()),
       ],

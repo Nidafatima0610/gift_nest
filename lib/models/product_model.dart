@@ -183,4 +183,7 @@ class ProductModel {
       personalizationPrice: (map['personalizationPrice'] as num?)?.toDouble() ?? 0.0,
     );
   }
+
+  /// Alias for title to maintain consistent naming across components.
+  String get name => title;
 }

@@ -5,6 +5,7 @@ import '../../screens/auth/signup_screen.dart';
 import '../../screens/build_gift/build_gift_screen.dart';
 import '../../screens/cart/cart_screen.dart';
 import '../../screens/checkout/checkout_screen.dart';
+import '../../screens/checkout/order_success_screen.dart';
 import '../../screens/explore/explore_screen.dart';
 import '../../screens/favorites/favorites_screen.dart';
 import '../../screens/gift_finder/gift_finder_screen.dart';
@@ -31,6 +32,7 @@ class AppRoutes {
   static const String favorites = '/favorites';
   static const String cart = '/cart';
   static const String checkout = '/checkout';
+  static const String orderSuccess = '/order-success';
   static const String orders = '/orders';
   static const String profile = '/profile';
 
@@ -61,6 +63,8 @@ class AppRoutes {
         return _buildRoute(const CartScreen(), settings);
       case checkout:
         return _buildRoute(const CheckoutScreen(), settings);
+      case orderSuccess:
+        return _buildRoute(const OrderSuccessScreen(), settings);
       case orders:
         return _buildRoute(const OrdersScreen(), settings);
       case profile:
