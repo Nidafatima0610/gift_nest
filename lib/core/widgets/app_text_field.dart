@@ -15,6 +15,10 @@ class AppTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final int maxLines;
   final ValueChanged<String>? onChanged;
+  final TextInputAction? textInputAction;
+  final FocusNode? focusNode;
+  final ValueChanged<String>? onFieldSubmitted;
+  final AutovalidateMode? autovalidateMode;
 
   const AppTextField({
     super.key,
@@ -28,6 +32,10 @@ class AppTextField extends StatelessWidget {
     this.suffixIcon,
     this.maxLines = 1,
     this.onChanged,
+    this.textInputAction,
+    this.focusNode,
+    this.onFieldSubmitted,
+    this.autovalidateMode,
   });
 
   @override
@@ -54,6 +62,10 @@ class AppTextField extends StatelessWidget {
           keyboardType: keyboardType,
           maxLines: maxLines,
           onChanged: onChanged,
+          textInputAction: textInputAction,
+          focusNode: focusNode,
+          onFieldSubmitted: onFieldSubmitted,
+          autovalidateMode: autovalidateMode,
           style: const TextStyle(
             fontSize: 14,
             color: AppColors.mainText,
