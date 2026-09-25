@@ -1,3 +1,4 @@
+import 'gift_box_model.dart';
 import 'product_model.dart';
 
 /// Represents a single line item in the shopping cart.
@@ -7,6 +8,7 @@ class CartItemModel {
   final int quantity;
   final Map<String, String>? personalizations;
   final String? giftRecipientNote;
+  final GiftBoxModel? giftBox;
 
   const CartItemModel({
     required this.id,
@@ -14,9 +16,15 @@ class CartItemModel {
     this.quantity = 1,
     this.personalizations,
     this.giftRecipientNote,
+    this.giftBox,
   });
 
+  bool get isGiftBox => giftBox != null;
+
   double get unitPrice {
+    if (giftBox != null) {
+      return giftBox!.total;
+    }
     final customFee = (personalizations != null && personalizations!.isNotEmpty)
         ? product.personalizationPrice
         : 0.0;
@@ -31,6 +39,7 @@ class CartItemModel {
     int? quantity,
     Map<String, String>? personalizations,
     String? giftRecipientNote,
+    GiftBoxModel? giftBox,
   }) {
     return CartItemModel(
       id: id ?? this.id,
@@ -38,6 +47,7 @@ class CartItemModel {
       quantity: quantity ?? this.quantity,
       personalizations: personalizations ?? this.personalizations,
       giftRecipientNote: giftRecipientNote ?? this.giftRecipientNote,
+      giftBox: giftBox ?? this.giftBox,
     );
   }
 
@@ -48,6 +58,7 @@ class CartItemModel {
       'quantity': quantity,
       'personalizations': personalizations,
       'giftRecipientNote': giftRecipientNote,
+      if (giftBox != null) 'giftBox': giftBox!.toMap(),
     };
   }
 
@@ -60,6 +71,9 @@ class CartItemModel {
           ? Map<String, String>.from(map['personalizations'] as Map)
           : null,
       giftRecipientNote: map['giftRecipientNote'] as String?,
+      giftBox: map['giftBox'] != null
+          ? GiftBoxModel.fromMap(map['giftBox'] as Map<String, dynamic>)
+          : null,
     );
   }
 }

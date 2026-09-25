@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/cart_model.dart';
+import '../models/gift_box_model.dart';
 import '../models/product_model.dart';
 
 /// Manages shopping cart state, gifting customizations, and local persistence.
@@ -14,6 +15,8 @@ class CartProvider extends ChangeNotifier {
 
   CartModel get cart => _cart;
   List<CartItemModel> get items => _cart.items;
+  List<GiftBoxModel> get giftBoxes =>
+      _cart.items.where((item) => item.giftBox != null).map((item) => item.giftBox!).toList();
   int get itemCount => _cart.totalItemCount;
   double get subtotal => _cart.subtotal;
   double get total => _cart.total;
@@ -83,6 +86,39 @@ class CartProvider extends ChangeNotifier {
       );
     }
 
+    _cart = _cart.copyWith(items: updatedItems);
+    _persist();
+    notifyListeners();
+  }
+
+  /// Adds a custom gift box to the cart.
+  void addGiftBox(GiftBoxModel giftBox) {
+    final boxCoverImage = giftBox.items.isNotEmpty && giftBox.items.first.product.imageUrls.isNotEmpty
+        ? giftBox.items.first.product.imageUrls.first
+        : '';
+    final dummyProduct = ProductModel(
+      id: 'box_${giftBox.id}',
+      title: 'Custom Gift Box (${giftBox.packagingStyle})',
+      description: '${giftBox.items.length} curated gifts with ${giftBox.packagingStyle} packaging',
+      price: giftBox.total,
+      imageUrls: boxCoverImage.isNotEmpty ? [boxCoverImage] : const [],
+      categoryId: 'gift_box',
+      creatorId: 'gift_nest',
+      creatorName: 'Gift Nest Studio',
+      rating: 5.0,
+      reviewCount: 1,
+      createdAt: giftBox.createdAt,
+    );
+
+    final cartItem = CartItemModel(
+      id: 'giftbox_${giftBox.id}_${DateTime.now().millisecondsSinceEpoch}',
+      product: dummyProduct,
+      quantity: 1,
+      giftRecipientNote: giftBox.personalMessage,
+      giftBox: giftBox,
+    );
+
+    final updatedItems = List<CartItemModel>.from(_cart.items)..add(cartItem);
     _cart = _cart.copyWith(items: updatedItems);
     _persist();
     notifyListeners();
